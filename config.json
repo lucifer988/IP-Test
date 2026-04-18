@@ -1,0 +1,8 @@
+{
+  "telegram": {
+    "bot_token": "YOUR_BOT_TOKEN_HERE",
+    "admin_id": "YOUR_TG_ID_HERE"
+  },
+  "itdog_wait_seconds": 35,
+  "only_admin": false
+}
