@@ -1,4 +1,4 @@
-# IP Analyzer Pro
+# ip test
 
  Telegram IP 地址分析工具，支持多线路测速、BGP 路由分析、IP 黑名单检测。
 

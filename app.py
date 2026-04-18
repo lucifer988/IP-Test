@@ -1048,7 +1048,7 @@ def build_app() -> Application:
 
 def interactive_init() -> None:
     print('=========================================')
-    print('  IP Analyzer Pro 安装配置')
+    print('  ip test 安装配置')
     print('=========================================')
     token = input('TG Bot Token: ').strip()
     admin_id = input('管理员 TG ID(可留空): ').strip()
