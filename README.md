@@ -1,101 +1,121 @@
-# ip test
+# IP Analyzer Pro (Telegram Bot)
 
- Telegram IP 地址分析工具，支持多线路测速、BGP 路由分析、IP 黑名单检测。
+一个可直接部署的 Telegram IP 分析机器人。
+输入 `IP` 或 `域名`，返回：
 
-## 功能特性
+- 基础归属信息（ASN / 持有者 / 国家地区 / 组织 / 路由前缀）
+- DNSBL 纯净度（Spamhaus / Spamcop / Barracuda）
+- itdog 国内聚焦（仅广东/广西三网）
+- itdog 海外四国（美国/日本/新加坡/德国，固定顺序）
+- BGP 路由情报（上游、AS Path、T1 命中）
 
-- **itdog.cn 测速** - 基于 itdog.cn 的多节点 Ping 测试
-- **国内线路** - 广东、广西三网（电信/联通/移动）检测
-- **海外节点** - 美国、日本、新加坡、德国四国测速
-- **BGP 分析** - ASN 查询、上游运营商、T1 网络识别
-- **IP 黑名单** - Spamhaus、Spamcop、Barracuda 黑名单检测
-- **TG 机器人** - Telegram 命令交互
+---
 
-## 环境要求
+## 特性
 
+- **Telegram 交互**：直接聊天输入 IP/域名即可分析
+- **国内结果聚焦**：只展示广东/广西 电信/联通/移动，信息更干净
+- **海外固定四国**：美国、日本、新加坡、德国，输出统一
+- **BGP 双数据源**：`bgp.tools Prefix Connectivity` + `RIPE Stat`（补充）
+- **弱网兜底**：itdog 等待 + 补测择优，降低海外缺组概率
+- **单实例锁**：防止多实例重复轮询导致 Telegram `Conflict`
+
+---
+
+## 运行要求
+
+- Ubuntu / Debian（推荐）
 - Python 3.8+
-- Telegram Bot Token
-- Chrome/Chromium（itdog 浏览器自动化需要）
-- agent-browser（可选，用于 itdog 持续测试）
+- `python-telegram-bot`、`requests`
+- Google Chrome / Chromium
+- `agent-browser`（用于 itdog 页面自动化）
 
-## 快速开始
+---
 
-### 1. 克隆项目
+## 快速安装
+
+### 1) 克隆
 
 ```bash
-git clone https://github.com/lucifer988/IP-.git /opt/ip-analyzer-pro
+git clone https://github.com/lucifer988/IP-Test.git /opt/ip-analyzer-pro
 cd /opt/ip-analyzer-pro
 ```
 
-### 2. 安装依赖
+### 2) 运行安装脚本
 
 ```bash
-# 安装系统依赖
-apt-get update
-apt-get install -y python3 python3-pip nodejs npm curl google-chrome-stable
-
-# 安装 Python 依赖
-pip3 install python-telegram-bot requests --break-system-packages
+sudo bash install.sh
 ```
 
-### 3. 配置
+安装脚本会自动：
 
-创建 `config.json`：
+1. 检查并安装依赖
+2. 交互写入 `config.json`
+3. 创建 `systemd` 服务 `ip-analyzer-pro`
+4. 可选立即启动
+
+---
+
+## 配置说明（config.json）
 
 ```json
 {
   "telegram": {
-    "bot_token": "你的TG_Bot_Token",
-    "admin_id": "你的TG_ID"
+    "bot_token": "YOUR_BOT_TOKEN_HERE",
+    "admin_id": "YOUR_TG_ID_HERE"
   },
-  "itdog_wait_seconds": 35,
+  "itdog_wait_seconds": 55,
   "only_admin": false
 }
 ```
 
-### 4. 启动
+- `bot_token`：@BotFather 申请
+- `admin_id`：管理员 TG 数字 ID（可留空）
+- `itdog_wait_seconds`：itdog 等待秒数（建议 45~60）
+- `only_admin`：是否仅管理员可用
 
-```bash
-# 直接运行
-python3 /opt/ip-analyzer-pro/app.py
+---
 
-# 或使用 systemd 服务
-systemctl start ip-analyzer-pro
+## Bot 使用
+
+| 输入 | 说明 |
+|---|---|
+| `/start` | 查看机器人说明 |
+| `/status` | 查看运行参数 |
+| `1.1.1.1` | 分析单个 IP |
+| `example.com` | 自动解析域名并分析 |
+| `1.1.1.1 8.8.8.8` | 一次分析多个目标（最多取前3个） |
+
+---
+
+## 输出格式（示例结构）
+
+```text
+IP 分析: 1.1.1.1
+
+基础信息
+- ASN: AS13335
+- 持有者: Cloudflare, Inc.
+...
+
+itdog 国内聚焦: 广东/广西 三网，命中 6 组
+- 广东电信: ...
+...
+
+itdog 海外: 美国/日本/新加坡/德国，命中 4/4 组
+- 美国: ...
+- 日本: ...
+- 新加坡: ...
+- 德国: ...
+
+BGP 路由情报
+- 数据源: bgp.tools Prefix Connectivity + RIPE Stat(补充)
+- AS Path: ...
+- 上游（共N条）
+- T1 in Path（共N个）
 ```
 
-## 一键安装
-
-```bash
-bash <(curl -sL https://raw.githubusercontent.com/lucifer988/IP-/main/install.sh)
-```
-
-安装脚本会：
-1. 检查系统依赖
-2. 安装 Python 依赖
-3. 交互式配置 TG Bot
-4. 创建 systemd 服务
-
-## Telegram 命令
-
-| 命令 | 说明 |
-|------|------|
-| `/start` | 启动机器人 |
-| `/help` | 显示帮助 |
-| `<IP>` | 分析单个 IP |
-| `<IP1> <IP2>` | 对比两个 IP |
-| `状态` | 查看服务状态 |
-
-## 输出格式
-
-### itdog 测试
-- 国内：广东/广西三网（电信/联通/移动）测速结果
-- 海外：美国、日本、新加坡、德国四国延迟
-
-### BGP 分析
-- ASN 编号
-- 上游运营商
-- T1 网络识别
-- 互联国家
+---
 
 ## 服务管理
 
@@ -113,30 +133,34 @@ systemctl restart ip-analyzer-pro
 systemctl status ip-analyzer-pro
 
 # 日志
-journalctl -u ip-analyzer-pro -f
+journalctl -u ip-analyzer-pro -f --no-pager
 ```
 
-## 目录结构
+---
 
-```
-ip-analyzer-pro/
-├── app.py           # 主程序
-├── config.json      # 配置文件
-├── install.sh       # 安装脚本
-├── uninstall.sh     # 卸载脚本
-└── bot.lock         # 运行锁文件
+## 卸载
+
+```bash
+sudo bash uninstall.sh
 ```
 
-## 获取 Telegram Bot Token
+会停止并移除服务、删除 `/opt/ip-analyzer-pro`、清理残留浏览器会话。
 
-1. 打开 @BotFather
-2. 发送 `/newbot`
-3. 按提示设置名称和用户名
-4. 复制 Bot Token
+---
 
-## 获取 Telegram ID
+## 项目结构
 
-发送 `/start` 给 @userinfobot 或 @getidsbot
+```text
+IP-Test/
+├── app.py
+├── config.json
+├── install.sh
+├── uninstall.sh
+├── README.md
+└── .gitignore
+```
+
+---
 
 ## License
 

@@ -78,9 +78,9 @@ interactive_config() {
   echo -n "管理员 TG ID (数字，可留空): "
   read -r ADMIN_ID
 
-  echo -n "itdog 持续测试等待秒数 [35]: "
+  echo -n "itdog 持续测试等待秒数 [55]: "
   read -r WAIT_SEC
-  WAIT_SEC=${WAIT_SEC:-35}
+  WAIT_SEC=${WAIT_SEC:-55}
   if ! [[ "$WAIT_SEC" =~ ^[0-9]+$ ]] || [[ "$WAIT_SEC" -lt 10 ]]; then
     error "等待秒数必须是 >= 10 的数字"
   fi
